@@ -6,6 +6,20 @@ if [ ! -f $HOME/.aliases ]; then
 	tee $HOME/.aliases >/dev/null <<'EOF'
 # Custom Aliases go here
 
+# git log diff master -> rubocop on listed files
+alias gldm="git log --pretty="" --name-only master..head | sort | uniq"
+alias mgdcop="gldm | tr \"\n\" \" \" | xargs rubocop -a"
+alias gitcommitammend="git commit --amend --no-edit"
+alias gitpushforce="git push --force"
+
+# run rubocop on changed/unstaged files from current branch
+alias gumf="git ls-files --others --modified --exclude-standard"
+alias gdnam="git diff --name-only --diff-filter=AM"
+alias gdcop="{ gumf & gdnam; } | xargs rubocop"
+
+# run rspec on changed SPEC files from current branch
+alias gdspec="{ gumf & gdnam; } | grep 'spec/' | xargs rspec"
+
 # some more ls aliases
 alias ll='ls -alhF'
 alias la='ls -A'
@@ -23,6 +37,17 @@ alias manpy='./manage.py'
 
 # Networking Aliases
 alias netip='ipconfig getifaddr en0'
+
+# Terraform
+alias tfi='terraform init -backend-config=state.conf'
+alias tfp='rm -f plan.bin && terraform plan -out=plan.bin | tee plan.txt'
+alias tf-dangerous-a='terraform apply plan.bin && rm -f plan.bin'
+
+# Rails
+alias rspec="bundle exec rspec"
+alias rake="bundle exec rake"
+alias testdb="RACK_ENV=test RAILS_ENV=test bundle exec rake -t db:test:load db:seed"
+
 EOF
 
 fi
@@ -31,6 +56,9 @@ fi
 if [ ! -f $HOME/.profile ]; then
 	touch $HOME/.profile
 	tee $HOME/.profile >/dev/null <<'EOF'
+
+# Brew into path
+eval "$(/opt/homebrew/bin/brew shellenv)"
 
 # Alias definitions.
 # You may want to put all your additions into a separate file like
@@ -47,9 +75,10 @@ fi
 
 export PATH=$PATH:$HOME/bin # For various scripts
 export PATH="~/.composer/vendor/bin:$PATH"
-export GOPATH="${HOME}/.go"
-export GOROOT="$(brew --prefix golang)/libexec"
-export PATH="$PATH:${GOPATH}/bin:${GOROOT}/bin"
+
+# Save history
+PROMPT_COMMAND="history -a"
+
 EOF
 fi
 
@@ -64,6 +93,7 @@ fpath=(~/bin $fpath)
 [[ -s "$HOME/.profile" ]] && source "$HOME/.profile" # Load the default .profile
 
 autoload -Uz compinit && compinit
+
 EOF
 fi
 
@@ -76,5 +106,6 @@ source $HOME/bin/git-completion.bash
 # Auto complete sudo commands
 complete -cf sudo
 [[ -s "$HOME/.profile" ]] && source "$HOME/.profile" # Load the default .profile
+
 EOF
 fi
