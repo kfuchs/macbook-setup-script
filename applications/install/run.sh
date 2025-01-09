@@ -20,3 +20,5 @@ brew install handbrake --cask
 brew install postman --cask
 brew install google-chrome --cask
 brew install --cask google-chrome@canary
+brew install --cask caffine
+brew install --cask rectangle-pro
